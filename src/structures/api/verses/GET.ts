@@ -9,6 +9,7 @@ interface IOptions<T extends Type> {
   translations: number;
   page: number;
   limit: number;
+  offset: number
 }
 
 export class GET {
@@ -19,6 +20,7 @@ export class GET {
     translations: 21,
     page: 1,
     limit: 10,
+    offset: 0
   };
   constructor(public verses: Verses) {}
   async list<T extends Type = "words">(options?: Partial<IOptions<T>>) {
@@ -26,7 +28,7 @@ export class GET {
     Object.assign(clone, options ?? {});
     return (
       await this.verses.api.axios.get<T extends "words" ? IListWord : IListImage>(
-        `chapters/${clone.surah}/verses?recitation=${clone.recitation}&translations=${clone.translations}&language=en&text_type=${clone.type}&limit=${clone.limit}&page=${clone.page}`
+        `chapters/${clone.surah}/verses?recitation=${clone.recitation}&translations=${clone.translations}&language=en&text_type=${clone.type}&limit=${clone.limit}&offset=${clone.offset}&page=${clone.page}`
       )
     ).data;
   }
