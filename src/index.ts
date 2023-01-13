@@ -5,12 +5,18 @@ const api = new Api();
   const recitations = await api.options.get.recitations();
   const tafsirs = await api.options.get.tafsirs();
   const translations = await api.options.get.translations();
-  const verses = await api.verses.get.verses.get.list(undefined, 2);
+  const verses = await api.verses.get.verses.get.list({
+    surah: 1,
+  });
 
   console.log(
     // recitations.recitations[0],
     // tafsirs.tafsirs[0],
     // translations.translations[0],
-    verses
+    verses.verses.map((verse) =>
+      verse.words.map((word) => {
+        return { [word.text_madani]: word.audio };
+      })
+    )
   );
 })();

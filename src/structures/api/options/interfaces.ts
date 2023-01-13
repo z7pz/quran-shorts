@@ -17,7 +17,7 @@ interface ITranslation {
   name: string;
   author_name: string;
   slug: string;
-  language_name: string; // lang,
+  language_name: TLanguage;
   translated_name: ITranslatedName;
 }
 
@@ -30,10 +30,10 @@ interface ITafsir {
   name: string;
   author_name: string;
   slug: string;
-  language_name: string; // lang;
+  language_name: TLanguage;
   translated_name: ITranslatedName;
 }
 
-export interface ITafsirs {
+ export interface ITafsirs {
   tafsirs: ITafsir[];
 }

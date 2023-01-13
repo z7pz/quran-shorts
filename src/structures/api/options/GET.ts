@@ -1,5 +1,5 @@
 import { Options } from ".";
-import { ITafsirs, ITranslations, type IRecitations } from "./interfaces";
+import { IRecitations, ITranslations, ITafsirs } from "./interfaces";
 
 export class GET {
   constructor(public options: Options) {}
