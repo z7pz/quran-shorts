@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts"
   },
-    "keywords": [],
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -15,6 +15,7 @@
     "axios": "^1.2.2",
     "editly": "^0.14.2",
     "fs": "0.0.1-security",
+    "https": "^1.0.0",
     "youtube-videos-uploader": "^2.0.8"
   }
 }

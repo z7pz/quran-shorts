@@ -2,6 +2,7 @@ import { Api } from "./api";
 import { IListImage } from "./api/verses/interfaces.js";
 import axios from "axios";
 import fs from "fs";
+import https from 'https'
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 class CalculatorManager {
@@ -23,21 +24,36 @@ class CalculatorManager {
     let paths = [];
     let promises = this.verses.map(async (verse) => {
       let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
-      let path = path_split.join("\\") + `\\tmp\\${mp3}`;
+      let png = `${verse.image.url.split("/")[verse.image.url.split("/").length - 1]}`;
+      let pathmp3 = path_split.join("\\") + `\\tmp\\${mp3}`;
+      let pathpng = path_split.join("\\") + `\\tmp\\${png}`;
       paths.push({
-        name: path,
+        name: pathmp3,
+        text: pathpng,
         duration: verse.audio.duration,
       });
-      const res = await axios({
+
+      let instance = axios.create({
+        httpsAgent: new https.Agent({  
+          rejectUnauthorized: false
+        })
+      })
+      const res = await instance({
         method: "get",
-        url: `https://verses.quran.com/${verse.audio.url}`,
+        url: `http://verses.quran.com/${verse.audio.url}`,
         responseType: "stream",
       });
-      res.data.pipe(fs.createWriteStream(path));
+      const res2 = await instance({
+        method: "get",
+        url: `https:${verse.image.url}`,
+        responseType: "stream",
+      });
+      res.data.pipe(fs.createWriteStream(pathmp3));
+      res2.data.pipe(fs.createWriteStream(pathpng));
     });
     await Promise.all(promises);
 
-    return paths as { name: string; duration: number }[];
+    return paths as { name: string; duration: number; text: string }[];
   }
 }
 
@@ -50,6 +66,7 @@ export class Client {
     let verses = []; // verses
     while (true) {
       const list = await this.api.verses.get.list({
+        recitation: 5,
         offset,
         limit: 1,
         page: page,

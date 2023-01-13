@@ -1,6 +1,6 @@
-import { Client } from "./structures/Client.js";
+import { Client } from "./structures/Client";
 import { Api } from "./structures/api";
-import Editly from "editly";
+import Editly, { Layer } from "editly";
 
 const api = new Api();
 const client = new Client();
@@ -19,23 +19,53 @@ const client = new Client();
   // );
   const verses = await client.calculate({
     surah: 2,
-    offset: 0,
+    offset: 30,
   });
   let files = await verses.download();
-  console.log(files);
-
+  let start = 0;
+  let dont = false;
+  let duration = files
+    .map((file) => file.duration)
+    .reduce((prev, curr) => prev + curr);
+  if ((duration + verses.verses.length * 0.4 )> 60) {
+    console.log(dont)
+    dont = true;
+  }
+  let total_duration = dont ? duration : duration + verses.verses.length * 0.4;
+  let f = files
+    .map((file) => {
+      let res = [
+        {
+          type: "image-overlay",
+          path: file.text,
+          start: start,
+          stop: start + file.duration + (dont ? 0 : 0.4),
+        },
+        {
+          type: "detached-audio",
+          path: file.name,
+          start: start,
+          stop: start + file.duration,
+        },
+      ] as Layer[];
+      start += file.duration + (dont ? 0 : 0.4);
+      return res;
+    })
+    .flatMap((v) => v);
+  console.log(f);
   Editly({
-    keepSourceAudio: true,
+    keepSourceAudio: false,
     outPath: "outfile.mp4",
     defaults: {
       transition: null,
-      layer: { fontPath: "./assets/Patua_One/PatuaOne-Regular.ttf" },
+      // duration: 0,
+      // layer: { fontPath: "./Al-QuranAlKareem.ttf" },
     },
-    clips: files.map((file) => {
-      return {
-        duration: file.duration,
-        layers: [{ type: "audio", path: file.name }],
-      };
-    }),
+    clips: [
+      {
+        duration: total_duration,
+        layers: [...f],
+      },
+    ],
   });
 })();
