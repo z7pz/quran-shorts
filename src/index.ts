@@ -15,11 +15,11 @@ const client = new Client();
   //   // recitations.recitations[0],
   //   // tafsirs.tafsirs[0],
   //   // translations.translations[0],
-  //   verses.verses
+    // verses.verses[0].
   // );
   const verses = await client.calculate({
     surah: 2,
-    offset: 30,
+    offset: 20,
   });
   let files = await verses.download();
   let start = 0;
@@ -52,7 +52,6 @@ const client = new Client();
       return res;
     })
     .flatMap((v) => v);
-  console.log(f);
   Editly({
     keepSourceAudio: false,
     outPath: "outfile.mp4",
@@ -64,7 +63,10 @@ const client = new Client();
     clips: [
       {
         duration: total_duration,
-        layers: [...f],
+        layers: [{
+          "type": "linear-gradient",
+          "colors": ["#fff", "#333"]
+        },...f],
       },
     ],
   });

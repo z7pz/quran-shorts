@@ -1,8 +1,8 @@
 import { Api } from "./api";
 import { IListImage } from "./api/verses/interfaces.js";
 import axios from "axios";
-import fs from "fs";
-import https from 'https'
+import fs, { lstat } from "fs";
+import https from "https";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 class CalculatorManager {
@@ -24,7 +24,9 @@ class CalculatorManager {
     let paths = [];
     let promises = this.verses.map(async (verse) => {
       let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
-      let png = `${verse.image.url.split("/")[verse.image.url.split("/").length - 1]}`;
+      let png = `${
+        verse.image.url.split("/")[verse.image.url.split("/").length - 1]
+      }`;
       let pathmp3 = path_split.join("\\") + `\\tmp\\${mp3}`;
       let pathpng = path_split.join("\\") + `\\tmp\\${png}`;
       paths.push({
@@ -34,10 +36,10 @@ class CalculatorManager {
       });
 
       let instance = axios.create({
-        httpsAgent: new https.Agent({  
-          rejectUnauthorized: false
-        })
-      })
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      });
       const res = await instance({
         method: "get",
         url: `http://verses.quran.com/${verse.audio.url}`,
@@ -73,6 +75,9 @@ export class Client {
         type: "image",
         surah: surah,
       });
+      if (list.pagination.next_page == null) {
+        break;
+      }
       let duration = list.verses[0].audio.duration ?? 0;
       if (duration + current > 60) {
         break;
