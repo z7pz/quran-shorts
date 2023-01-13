@@ -20,11 +20,9 @@ interface IWord {
   };
   audio: {
     url: string | null; // "wbw/001_001_001.mp3", null cuz of the number of Aea
-    duration: number;
-    segments: [[number, number, number, number]]; // [[number, number, number, number]]
   };
 }
-interface IVerse {
+interface IVerseWord {
   id: number;
   verse_number: number;
   chapter_id: number;
@@ -39,6 +37,33 @@ interface IVerse {
   text_madani: string;
   words: IWord[];
 }
+
+interface Image {
+  url: string;
+  width: number;
+}
+
+interface IVerseImage {
+  id: number;
+  verse_number: number;
+  chapter_id: number;
+  verse_key: TVerseKey;
+  text_indopak: string;
+  juz_number: number;
+  hizb_number: number;
+  rub_el_hizb_number: number;
+  sajdah_number: null | number;
+  page_number: number;
+  sajdah: null | number;
+  text_madani: string;
+  image: Image;
+  audio: {
+    url: string | null; // "wbw/001_001_001.mp3", null cuz of the number of Aea
+    duration: number | null;
+    segments: [[number, number, number, number]]; // [[number, number, number, number]]
+  };
+}
+
 interface IPagination {
   current_page: number;
   next_page: null | number;
@@ -46,7 +71,11 @@ interface IPagination {
   total_pages: number;
   total_count: number;
 }
-export interface IList {
-  verses: IVerse[];
+export interface IListWord {
+  verses: IVerseWord[];
+  pagination: IPagination;
+}
+export interface IListImage {
+  verses: IVerseImage[];
   pagination: IPagination;
 }
