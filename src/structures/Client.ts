@@ -54,7 +54,7 @@ export class Client {
         limit: 1,
         page: page,
         type: "image",
-        surah: 2,
+        surah: surah,
       });
       let duration = list.verses[0].audio.duration ?? 0;
       if (duration + current > 60) {
