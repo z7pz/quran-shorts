@@ -20,6 +20,8 @@ interface IWord {
   };
   audio: {
     url: string | null; // "wbw/001_001_001.mp3", null cuz of the number of Aea
+    duration: number;
+    segments: [[number, number, number, number]]; // [[number, number, number, number]]
   };
 }
 interface IVerse {

@@ -6,17 +6,13 @@ const api = new Api();
   const tafsirs = await api.options.get.tafsirs();
   const translations = await api.options.get.translations();
   const verses = await api.verses.get.verses.get.list({
-    surah: 1,
+    surah: 2,
   });
 
   console.log(
     // recitations.recitations[0],
     // tafsirs.tafsirs[0],
     // translations.translations[0],
-    verses.verses.map((verse) =>
-      verse.words.map((word) => {
-        return { [word.text_madani]: word.audio };
-      })
-    )
+    verses.verses.length
   );
 })();
