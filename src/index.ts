@@ -15,7 +15,7 @@ const client = new Client();
   //   // recitations.recitations[0],
   //   // tafsirs.tafsirs[0],
   //   // translations.translations[0],
-    // verses.verses[0].
+  // verses.verses[0].
   // );
   const verses = await client.calculate({
     surah: 2,
@@ -27,8 +27,8 @@ const client = new Client();
   let duration = files
     .map((file) => file.duration)
     .reduce((prev, curr) => prev + curr);
-  if ((duration + verses.verses.length * 0.4 )> 60) {
-    console.log(dont)
+  if (duration + verses.verses.length * 0.4 > 60) {
+    console.log(dont);
     dont = true;
   }
   let total_duration = dont ? duration : duration + verses.verses.length * 0.4;
@@ -58,15 +58,18 @@ const client = new Client();
     defaults: {
       transition: null,
       // duration: 0,
-      // layer: { fontPath: "./Al-QuranAlKareem.ttf" },
+      // layer: { "fontPath": "./Al-QuranAlKareem.ttf" },
     },
     clips: [
       {
         duration: total_duration,
-        layers: [{
-          "type": "linear-gradient",
-          "colors": ["#fff", "#333"]
-        },...f],
+        layers: [
+          {
+            type: "linear-gradient",
+            colors: ["#fff", "#333"],
+          },
+          ...f,
+        ],
       },
     ],
   });

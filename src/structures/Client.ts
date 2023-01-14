@@ -1,18 +1,46 @@
 import { Api } from "./api";
 import { IListImage } from "./api/verses/interfaces.js";
 import axios from "axios";
-import fs, { lstat } from "fs";
+import fs, { realpathSync } from "fs";
 import https from "https";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 class CalculatorManager {
+  api = new Api();
   constructor(
     public page: number,
     public current: number,
-    public verses: IListImage["verses"]
+    public verses: IListImage["verses"],
+    public surah: number,
+    public offset: number
   ) {}
   getAudio() {
     return this.verses.map((verse) => [verse.audio.url, verse.audio.duration]);
+  }
+  async getVerses() {
+    const words = this.verses.map(async (verse) => {
+      return await this.api.verses.get.list({
+        offset: this.offset,
+        limit: this.page,
+        surah: this.surah,
+        type: "words",
+      });
+    });
+    return await Promise.all(words);
+  }
+  async getWords() {
+    const verses = await this.getVerses();
+    const words = verses[0].verses.map((verse) => {
+      return verse.words.map((word, i) => {
+        return {
+          i,
+          text: word.text_indopak,
+          code: word.code,
+          p: word.class_name,
+        };
+      });
+    });
+    return words;
   }
   async download() {
     const __filename = fileURLToPath(import.meta.url);
@@ -20,18 +48,22 @@ class CalculatorManager {
 
     let path_split = __dirname.split("\\");
     path_split.splice(path_split.length - 1, path_split.length);
-    console.log(path_split.join("\\"));
+    // console.log(path_split.join("\\"));
     let paths = [];
-    let promises = this.verses.map(async (verse) => {
+    let promises = this.verses.map(async (verse, i) => {
       let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
       let png = `${
         verse.image.url.split("/")[verse.image.url.split("/").length - 1]
       }`;
       let pathmp3 = path_split.join("\\") + `\\tmp\\${mp3}`;
       let pathpng = path_split.join("\\") + `\\tmp\\${png}`;
+      const verses_words = await this.getWords();
+      const words = verses_words[i];
       paths.push({
+        i,
+        font: parseInt(words[0].p.replace("p", "")),
         name: pathmp3,
-        text: pathpng,
+        words: words,
         duration: verse.audio.duration,
       });
 
@@ -54,8 +86,17 @@ class CalculatorManager {
       res2.data.pipe(fs.createWriteStream(pathpng));
     });
     await Promise.all(promises);
-
-    return paths as { name: string; duration: number; text: string }[];
+    return paths as {
+      i: number;
+      name: string;
+      duration: number;
+      font: number;
+      words: {
+        text: string;
+        code: string;
+        p: string;
+      }[];
+    }[];
   }
 }
 
@@ -68,7 +109,7 @@ export class Client {
     let verses = []; // verses
     while (true) {
       const list = await this.api.verses.get.list({
-        recitation: 5,
+        recitation: 7,
         offset,
         limit: 1,
         page: page,
@@ -86,7 +127,7 @@ export class Client {
       page++;
       current += duration;
     }
-    return new CalculatorManager(page, current, verses);
+    return new CalculatorManager(page, current, verses, surah, offset);
   }
   build() {
     // build the video and download it into the pc files

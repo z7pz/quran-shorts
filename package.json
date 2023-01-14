@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts"
+    "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts",
+    "test": "nodemon --experimental-specifier-resolution=node ./tests/verse_with_num.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "editly": "^0.14.2",
     "fs": "0.0.1-security",
     "https": "^1.0.0",
+    "woff2": "^1.0.0",
     "youtube-videos-uploader": "^2.0.8"
   }
 }
