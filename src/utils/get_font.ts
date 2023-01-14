@@ -1,6 +1,9 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { convert_woff2_tff, download_font, install_font } from ".";
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 export async function get_font(n: number) {
     const __filename = fileURLToPath(import.meta.url);
@@ -10,7 +13,10 @@ export async function get_font(n: number) {
 
     path_split = [...path_split, "tmp", "fonts"];
     await download_font(n, path_split);
+    sleep(500)    
     await convert_woff2_tff(n, path_split);
-    // await install_font(n, path_split); // TODO: install font
-    // return /* font path */ // TODO: retrun font path
+    sleep(500)    
+    await install_font(n, path_split); // TODO: install font
+    sleep(500)    
+    return ""
 }

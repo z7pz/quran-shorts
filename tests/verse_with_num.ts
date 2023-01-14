@@ -3,7 +3,7 @@ import { Client } from "../src/structures/Client";
 import { get_font } from '../src/utils'
 const client = new Client();
 (async () => {
-  const test = await client.calculate({ surah: 1, offset: 0 });
+  const test = await client.calculate({ surah: 4, offset: 0 });
   //   console.log(await test.getWords())
 
   const files = await test.download();
@@ -14,14 +14,13 @@ const client = new Client();
   let start = 0;
 
 
-  console.log(files);
+  console.log(files.sort((a,b) => a.i - b.i));
   const layers = (await Promise.all(files.sort((a,b) => a.i - b.i).map(async(file) => {
     const text = {
       type: "subtitle",
       fontPath: await get_font(file.font),
       text: file.words
         .map((word) => {
-          
           let htmlEntity = word.code;
           let codePoint = htmlEntity.match(/x([\da-fA-F]+)/)![1];
           let hexCode = codePoint.toUpperCase();
@@ -58,3 +57,5 @@ const client = new Client();
     ],
   });
 })();
+
+
