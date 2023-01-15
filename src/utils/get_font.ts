@@ -11,6 +11,7 @@ export async function get_font(n: number) {
     let path_split = __dirname.split("\\");
     path_split.splice(path_split.length - 1, path_split.length);
 
+    let ps1_split = [...path_split, "tmp", "fonts"];
     path_split = [...path_split, "tmp", "fonts"];
     await download_font(n, path_split);
     // console.log('wtf')    

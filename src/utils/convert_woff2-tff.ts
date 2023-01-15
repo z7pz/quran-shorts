@@ -17,7 +17,7 @@ export async function convert_woff2_tff(n: number, path_split: string[]) {
       woff2Buffer
     );
      const test = await wawoff2.decompress(file_decompressed);
-     fs.writeFile([...path_split, `p${n}.ttf`].join("\\"),test);
+     await fs.writeFile([...path_split, `p${n}.ttf`].join("\\"),test);
       // console.log(test)
     // // Convert the WOFF2 font to TFF
     // var ttfBuffer = woff2.decode(woff2Buffer);

@@ -3,8 +3,11 @@ import { IListImage } from "./api/verses/interfaces.js";
 import axios from "axios";
 import fs, { realpathSync } from "fs";
 import https from "https";
+import PQueue from 'p-queue'
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import Editly, { Layer } from "editly";
+import { get_font } from "../utils";
 class CalculatorManager {
   api = new Api();
   constructor(
@@ -124,8 +127,64 @@ export class Client {
     }
     return new CalculatorManager(page, current, verses, surah, offset);
   }
-  build() {
-    // build the video and download it into the pc files
+  async build() {
+    const downloader = await this.calculate({ surah: 100, offset: 1 });
+    //   console.log(await test.getWords())
+  
+    const files = await downloader.download();
+    let total_duration = files
+      .map((file) => file.duration)
+      .reduce((prev, curr) => prev + curr);
+    let start = 0;
+    const layers = files
+      .sort((a, b) => a.i - b.i)
+      .map((file) => {
+        return async () => {
+          const text = {
+            type: "subtitle",
+            fontPath: await get_font(file.font),
+            text: file.words
+            .map((word) => {
+              let htmlEntity = word.code;
+              let codePoint = htmlEntity.match(/x([\da-fA-F]+)/)![1];
+              let hexCode = codePoint.toUpperCase();
+              let character = String.fromCharCode(parseInt(hexCode, 16));
+              return character;
+            })
+            .join(" "),
+            start,
+            stop: start + file.duration,
+          } as Layer;
+          const voice = {
+            type: "detached-audio",
+            start,
+            stop: start + file.duration,
+            path: file.name,
+          } as Layer;
+          start += file.duration;
+          return [text, voice] as Layer[];
+        };
+      })
+      .flatMap((v) => v);
+      const lays = (await new PQueue({ concurrency: 1 }).addAll(layers)).flatMap(
+        (v) => v
+      );
+      console.log(lays);
+    Editly({
+      keepSourceAudio: false,
+      outPath: "test.mp4",
+      defaults: {
+        transition: null,
+      },
+      clips: [
+        {
+          duration: total_duration,
+          layers: [
+            ...lays,
+          ],
+        },
+      ],
+    });
   }
   upload() {
     // uploading short into youtube
