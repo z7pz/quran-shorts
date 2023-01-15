@@ -18,7 +18,7 @@ class CalculatorManager {
     return this.verses.map((verse) => [verse.audio.url, verse.audio.duration]);
   }
   async getVerses() {
-    const words = this.verses.map(async (verse) => {
+    const words = this.verses.map(async (verse, i) => {
       return await this.api.verses.get.list({
         offset: this.offset,
         limit: this.page,
@@ -31,14 +31,17 @@ class CalculatorManager {
   async getWords() {
     const verses = await this.getVerses();
     const words = verses[0].verses.map((verse) => {
-      return verse.words.map((word, i) => {
-        return {
-          i,
-          text: word.text_indopak,
-          code: word.code,
-          p: word.class_name,
-        };
-      });
+      return {
+        id: verse.id,
+        words: verse.words.map((word, i) => {
+          return {
+            i,
+            text: word.text_indopak,
+            code: word.code,
+            p: word.class_name,
+          };
+        }),
+      };
     });
     return words;
   }
@@ -48,28 +51,25 @@ class CalculatorManager {
 
     let path_split = __dirname.split("\\");
     path_split.splice(path_split.length - 1, path_split.length);
-    // console.log(path_split.join("\\"));
     let paths = [];
     let promises = this.verses.map(async (verse, i) => {
       let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
-      let png = `${
-        verse.image.url.split("/")[verse.image.url.split("/").length - 1]
-      }`;
-      let pathmp3 = path_split.join("\\") + `\\tmp\\${mp3}`;
-      let pathpng = path_split.join("\\") + `\\tmp\\${png}`;
+      let pathmp3 = path_split.join("\\") + `\\tmp\\audio\\${mp3}`;
       const verses_words = await this.getWords();
-      const words = verses_words[i];
+      // console.log(verse.verse_number, verses_words[i].id);
+      const ver = verses_words[i];
       paths.push({
-        i,
-        font: parseInt(words[0].p.replace("p", "")),
+        i: ver.id,
+        font: parseInt(ver.words[0].p.replace("p", "")),
         name: pathmp3,
-        words: words,
+        words: ver.words,
         duration: verse.audio.duration,
       });
 
       let instance = axios.create({
         httpsAgent: new https.Agent({
           rejectUnauthorized: false,
+          keepAlive: true,
         }),
       });
       const res = await instance({
@@ -77,21 +77,16 @@ class CalculatorManager {
         url: `http://verses.quran.com/${verse.audio.url}`,
         responseType: "stream",
       });
-      const res2 = await instance({
-        method: "get",
-        url: `https:${verse.image.url}`,
-        responseType: "stream",
-      });
       res.data.pipe(fs.createWriteStream(pathmp3));
-      res2.data.pipe(fs.createWriteStream(pathpng));
     });
     await Promise.all(promises);
-    return paths as {
+    return paths.sort((a, b) => a.i - b.i) as {
       i: number;
       name: string;
       duration: number;
       font: number;
       words: {
+        i: number;
         text: string;
         code: string;
         p: string;

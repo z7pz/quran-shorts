@@ -13,10 +13,8 @@ export async function get_font(n: number) {
 
     path_split = [...path_split, "tmp", "fonts"];
     await download_font(n, path_split);
-    sleep(500)    
+    // console.log('wtf')    
     await convert_woff2_tff(n, path_split);
-    sleep(500)    
     await install_font(n, path_split); // TODO: install font
-    sleep(500)    
-    return ""
+    return [...path_split, `p${n}.ttf`].join("\\");
 }

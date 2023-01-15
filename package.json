@@ -17,6 +17,8 @@
     "editly": "^0.14.2",
     "fs": "0.0.1-security",
     "https": "^1.0.0",
+    "p-queue": "^7.3.0",
+    "wawoff2": "^2.0.1",
     "woff2": "^1.0.0",
     "youtube-videos-uploader": "^2.0.8"
   }

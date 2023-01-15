@@ -1,29 +1,46 @@
 import axios from "axios";
-import fs, { cpSync } from "fs";
+import { createWriteStream } from "fs";
+import fs from "fs/promises";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import Downloader from "nodejs-file-downloader";
-import EasyDl from "easydl"
-export async function download_font(n: number, path_split: string[]) {
-  // fix: downloading woff2
-  return await new Promise<string>(async (res, rej) => {
-    const path_font = [...path_split, `p${n}.woff2`].join("\\");
-    // const downloader = new Downloader({
-    //   url: `https://quran.com/fonts/quran/hafs/v1/woff2/p${n}.woff2`, //If the file name already exists, a new file with the name 200MB1.zip is created.
-    //   directory: "./src/tmp/fonts", //This folder will be created, if it doesn't exist.
-    //   "cloneFiles": false
-    // });
+export async function downloadFile(
+  fileUrl: string,
+  outputLocationPath: string
+) {
+  const writer = createWriteStream(outputLocationPath);
 
-    // const { filePath, downloadStatus } = await downloader.download();
+  return axios({
+    method: "get",
+    url: fileUrl,
+    responseType: "stream",
+  }).then((response) => {
+    //ensure that the user can call `then()` only when the file has
+    //been downloaded entirely.
 
-    // res(filePath);
-    const results = await axios({
-      method: "get",
-      url: `https://quran.com/fonts/quran/hafs/v1/woff2/p${n}.woff2`,
-      responseType: "stream",
+    return new Promise((resolve, reject) => {
+      response.data.pipe(writer);
+      let error = null;
+      writer.on("error", (err) => {
+        error = err;
+        writer.close();
+        reject(err);
+      });
+      writer.on("close", () => {
+        if (!error) {
+          resolve(true);
+        }
+        //no need to call the reject here, as it will have been called in the
+        //'error' stream;
+      });
     });
-    results.data.pipe(fs.createWriteStream(path_font));
-    console.log('downloaded')
-    res("test")
   });
+}
+export async function download_font(n: number, path_split: string[]) {
+  const path_font = [...path_split, `p${n}.woff2`].join("\\");
+
+  await downloadFile(
+    `https://quran.com/fonts/quran/hafs/v1/woff2/p${n}.woff2`,
+    path_font
+  );
+  // console.log("done?");
 }
