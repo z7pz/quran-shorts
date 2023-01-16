@@ -6,6 +6,7 @@ basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 - still beta
 
 # TODO
+- [ ] dont download existed files (mp3, fonts)
 - [ ] support linux [#1](/../../issues/1)
 - [ ] delete tmp files
 - [X] fix bugs (end of the surah and ...)
