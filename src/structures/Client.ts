@@ -1,5 +1,5 @@
 import { Api } from "./api";
-import {config} from 'dotenv';
+import { config } from "dotenv";
 import { IListImage } from "./api/verses/interfaces.js";
 import PQueue from "p-queue";
 import { fileURLToPath } from "url";
@@ -218,16 +218,20 @@ export class Client {
         },
       ],
     });
-    
+
     return {
       name: `${surahs[surah - 1].name}`,
-      description: `${surahs[surah- 1].name}`,
+      description: `${surahs[surah - 1].name}`,
       surah,
       offset: downloader.offset + files.length,
     };
   }
-  async upload(video: BuildRes): Promise<{ surah: number; offset: number; }> {
-    const credentials = { email: process.env.email, pass: process.env.password };
+  async upload(video: BuildRes): Promise<{ surah: number; offset: number }> {
+    const credentials = {
+      email: process.env.email,
+      pass: process.env.password,
+      recoveryemail: process.env.recoveryEmail || undefined,
+    };
 
     const video1 = {
       path: `output.mp4`,
@@ -238,9 +242,9 @@ export class Client {
       skipProcessingWait: true,
     } as Video;
 
-    await upload(credentials, [video1], { executablePath: executablePath() }).then(
-      console.log
-    );
+    await upload(credentials, [video1], {
+      executablePath: executablePath(),
+    }).then(console.log);
     return {
       surah: video.surah,
       offset: video.offset,
