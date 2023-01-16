@@ -1,8 +1,6 @@
 import { Api } from "./api";
+import {config} from 'dotenv';
 import { IListImage } from "./api/verses/interfaces.js";
-import axios from "axios";
-import fs from "fs";
-import https from "https";
 import PQueue from "p-queue";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -10,6 +8,15 @@ import Editly, { Layer } from "editly";
 import { get_font } from "../utils";
 import { Logger } from "../utils/logger";
 import { downloadFile } from "../utils/download_stream";
+import { upload } from "youtube-videos-uploader";
+import { executablePath } from "puppeteer";
+import { Video } from "youtube-videos-uploader/dist/types";
+import { surahs } from "../constants/surah";
+
+config();
+const onVideoUploadSuccess = (videoUrl) => {
+  console.log(videoUrl);
+};
 
 interface BuildRes {
   name: string;
@@ -84,7 +91,7 @@ class CalculatorManager {
         duration: verse.audio.duration,
       });
 
-      await downloadFile(`http://verses.quran.com/${verse.audio.url}`,pathmp3)
+      await downloadFile(`http://verses.quran.com/${verse.audio.url}`, pathmp3);
     });
     await Promise.all(promises);
     return paths.sort((a, b) => a.i - b.i) as {
@@ -155,8 +162,8 @@ export class Client {
       skipVerses
     );
   }
-  async build(off: number, surah: number, i: number): Promise<BuildRes> {
-    const downloader = await this.calculate({ surah: surah, offset: off });
+  async build(offset: number, surah: number, i: number): Promise<BuildRes> {
+    const downloader = await this.calculate({ surah: surah, offset });
     if (downloader == false) {
       return await this.build(0, surah + 1, i);
     }
@@ -191,17 +198,16 @@ export class Client {
             path: file.name,
           } as Layer;
           start += file.duration;
-          return [voice,text] as Layer[];
+          return [voice, text] as Layer[];
         };
       })
       .flatMap((v) => v);
     const lays = (await new PQueue({ concurrency: 1 }).addAll(layers)).flatMap(
       (v) => v
     );
-    console.log(lays)
     await Editly({
       keepSourceAudio: false,
-      outPath: `test${i}.mp4`,
+      outPath: `output.mp4`,
       defaults: {
         transition: null,
       },
@@ -212,14 +218,32 @@ export class Client {
         },
       ],
     });
+    
     return {
-      name: "",
-      description: "",
+      name: `${surahs[surah - 1].name}`,
+      description: `${surahs[surah- 1].name}`,
       surah,
       offset: downloader.offset + files.length,
     };
   }
-  upload() {
-    // uploading short into youtube
+  async upload(video: BuildRes): Promise<{ surah: number; offset: number; }> {
+    const credentials = { email: process.env.email, pass: process.env.password };
+
+    const video1 = {
+      path: `output.mp4`,
+      title: video.name,
+      description: "description 1",
+      isNotForKid: true,
+      onSuccess: onVideoUploadSuccess,
+      skipProcessingWait: true,
+    } as Video;
+
+    await upload(credentials, [video1], { executablePath: executablePath() }).then(
+      console.log
+    );
+    return {
+      surah: video.surah,
+      offset: video.offset,
+    };
   }
 }
