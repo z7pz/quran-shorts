@@ -23,5 +23,5 @@ add missing fields
 ```
 email="your email"
 password="your password"
-recoveryEmail="your recoveryemail"
+recoveryEmail="" # not necessary
 ```
