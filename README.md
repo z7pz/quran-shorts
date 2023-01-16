@@ -1,8 +1,9 @@
 # 7snat Tool
+basically, upload shorts videos of quran into youtube
 
 # Features
-- supported windows only 
-- still under development
+- support (windows) 
+- still beta
 
 # TODO
 - [ ] support linux [#1](/../../issues/1)
