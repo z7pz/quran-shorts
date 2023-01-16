@@ -4,5 +4,5 @@ import PQueue from "p-queue";
 import { get_font } from "../src/utils";
 const client = new Client();
 (async () => {
-  await client.build();
+  await client.build(8, 1);
 })();

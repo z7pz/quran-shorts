@@ -1,13 +1,14 @@
 import { Api } from "./api";
 import { IListImage } from "./api/verses/interfaces.js";
 import axios from "axios";
-import fs, { realpathSync } from "fs";
+import fs from "fs";
 import https from "https";
-import PQueue from 'p-queue'
+import PQueue from "p-queue";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import Editly, { Layer } from "editly";
 import { get_font } from "../utils";
+import { Logger } from "../utils/logger";
 class CalculatorManager {
   api = new Api();
   constructor(
@@ -15,7 +16,8 @@ class CalculatorManager {
     public current: number,
     public verses: IListImage["verses"],
     public surah: number,
-    public offset: number
+    public offset: number,
+    public logger: Logger
   ) {}
   getAudio() {
     return this.verses.map((verse) => [verse.audio.url, verse.audio.duration]);
@@ -59,8 +61,9 @@ class CalculatorManager {
       let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
       let pathmp3 = path_split.join("\\") + `\\tmp\\audio\\${mp3}`;
       const verses_words = await this.getWords();
-      // console.log(verse.verse_number, verses_words[i].id);
+      console.log(verses_words);
       const ver = verses_words[i];
+      // console.log(ver);
       paths.push({
         i: ver.id,
         font: parseInt(ver.words[0].p.replace("p", "")),
@@ -100,8 +103,14 @@ class CalculatorManager {
 
 export class Client {
   api = new Api();
-  constructor() {}
+  logger: Logger;
+  constructor(debug: boolean = false) {
+    this.logger = new Logger(debug);
+  }
   async calculate({ surah, offset }: { surah: number; offset: number }) {
+    if(surah > 114) {
+      throw Error("Last surah is 114, you can't get beyond that.")
+    }
     let current = 0; // video length
     let page = 1; // verse number
     let verses = []; // verses
@@ -114,7 +123,8 @@ export class Client {
         type: "image",
         surah: surah,
       });
-      if (list.pagination.next_page == null) {
+      console.log(list.pagination.total_count, offset + page )
+      if (list.pagination.total_count < offset + page) {
         break;
       }
       let duration = list.verses[0].audio.duration ?? 0;
@@ -125,12 +135,14 @@ export class Client {
       page++;
       current += duration;
     }
-    return new CalculatorManager(page, current, verses, surah, offset);
+    if(verses.length == 0) return false;
+    return new CalculatorManager(page, current, verses, surah, offset, this.logger);
   }
-  async build() {
-    const downloader = await this.calculate({ surah: 100, offset: 1 });
-    //   console.log(await test.getWords())
-  
+  async build(offset: number, surah: number) {
+    const downloader = await this.calculate({ surah: surah, offset: offset });
+    if(downloader == false) {
+      return this.build(0, surah+1)
+    }
     const files = await downloader.download();
     let total_duration = files
       .map((file) => file.duration)
@@ -144,14 +156,14 @@ export class Client {
             type: "subtitle",
             fontPath: await get_font(file.font),
             text: file.words
-            .map((word) => {
-              let htmlEntity = word.code;
-              let codePoint = htmlEntity.match(/x([\da-fA-F]+)/)![1];
-              let hexCode = codePoint.toUpperCase();
-              let character = String.fromCharCode(parseInt(hexCode, 16));
-              return character;
-            })
-            .join(" "),
+              .map((word) => {
+                let htmlEntity = word.code;
+                let codePoint = htmlEntity.match(/x([\da-fA-F]+)/)![1];
+                let hexCode = codePoint.toUpperCase();
+                let character = String.fromCharCode(parseInt(hexCode, 16));
+                return character;
+              })
+              .join(" "),
             start,
             stop: start + file.duration,
           } as Layer;
@@ -166,10 +178,9 @@ export class Client {
         };
       })
       .flatMap((v) => v);
-      const lays = (await new PQueue({ concurrency: 1 }).addAll(layers)).flatMap(
-        (v) => v
-      );
-      console.log(lays);
+    const lays = (await new PQueue({ concurrency: 1 }).addAll(layers)).flatMap(
+      (v) => v
+    );
     Editly({
       keepSourceAudio: false,
       outPath: "test.mp4",
@@ -179,9 +190,7 @@ export class Client {
       clips: [
         {
           duration: total_duration,
-          layers: [
-            ...lays,
-          ],
+          layers: [...lays],
         },
       ],
     });
