@@ -2,6 +2,7 @@
 basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 
 # Features
+- support youtube
 - support (windows) 
 - still beta
 
@@ -14,3 +15,13 @@ basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 - [ ] start from the last upload
 - [ ] add backgroud as asset
 - [ ] generate backgrounds
+
+
+# Usage
+create `.env` file 
+add missing fields
+```
+email="your email"
+password="your password"
+recoveryEmail="your recoveryemail"
+```
