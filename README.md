@@ -1,5 +1,5 @@
-# 7snat Tool
-basically, upload shorts videos of quran into youtube
+# quran-shorts
+basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 
 # Features
 - support (windows) 
