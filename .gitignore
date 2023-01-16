@@ -2,3 +2,5 @@ pnpm-lock.yaml
 node_modules
 tmp
 editly-*
+.env
+yt-auth
