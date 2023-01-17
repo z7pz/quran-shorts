@@ -89,11 +89,19 @@ export class Client {
     if (downloader == false) {
       return await this.build(0, surah + 1, i);
     }
+    let dont = false;
+
     const files = await downloader.download();
     let total_duration = files
       .map((file) => file.duration)
       .reduce((prev, curr) => prev + curr);
     let start = 0;
+    let addition = 0.3; 
+    if (total_duration + files.length * addition > 60) {
+      dont = true;
+    }
+    let add =  + (dont ? 0 : addition);
+
     /**
      * building the layers for PQueu so we can await them with same concurrency
      */
@@ -118,7 +126,7 @@ export class Client {
               })
               .join(" "),
             start,
-            stop: start + file.duration,
+            stop: start + file.duration + add,
           } as Layer;
           // create voice layer of the (mp3) file
           const voice = {
@@ -127,7 +135,7 @@ export class Client {
             stop: start + file.duration,
             path: file.name,
           } as Layer;
-          start += file.duration;
+          start += file.duration + add;
           return [voice, text] as Layer[];
         };
       })
@@ -152,7 +160,7 @@ export class Client {
       },
       clips: [
         {
-          duration: total_duration,
+          duration: total_duration + add,
           layers: [
             {
               type: "image-overlay",
