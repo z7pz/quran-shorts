@@ -139,7 +139,7 @@ export class Client {
         break;
       }
       let duration = list.verses[0].audio.duration ?? 0;
-      if (duration + current > 60) {
+      if (duration + current >= 60) {
         if (verses.length > 0) {
           break;
         }
@@ -178,9 +178,9 @@ export class Client {
       .map((file) => {
         return async () => {
           const text = {
-            originX: 'center',
-            originY: 'center',
-            "type": "title",
+            originX: "center",
+            originY: "center",
+            type: "title",
             fontPath: await get_font(file.font),
             text: file.words
               .map((word) => {
@@ -211,7 +211,7 @@ export class Client {
     const assets = await fs.readdir("assets");
     const randomFile = assets[Math.floor(Math.random() * assets.length)];
     await Editly({
-      "enableFfmpegLog": false,
+      enableFfmpegLog: false,
       keepSourceAudio: false,
       outPath: `output.mp4`,
       height: 1920,
