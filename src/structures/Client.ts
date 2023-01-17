@@ -12,6 +12,7 @@ import { upload } from "youtube-videos-uploader";
 import { executablePath } from "puppeteer";
 import { Video } from "youtube-videos-uploader/dist/types";
 import { surahs } from "../constants/surah";
+import fs from "fs/promises";
 
 config();
 const onVideoUploadSuccess = (videoUrl) => {
@@ -177,7 +178,9 @@ export class Client {
       .map((file) => {
         return async () => {
           const text = {
-            type: "subtitle",
+            originX: 'center',
+            originY: 'center',
+            "type": "title",
             fontPath: await get_font(file.font),
             text: file.words
               .map((word) => {
@@ -205,16 +208,27 @@ export class Client {
     const lays = (await new PQueue({ concurrency: 1 }).addAll(layers)).flatMap(
       (v) => v
     );
+    const assets = await fs.readdir("assets");
+    const randomFile = assets[Math.floor(Math.random() * assets.length)];
     await Editly({
+      "enableFfmpegLog": false,
       keepSourceAudio: false,
       outPath: `output.mp4`,
+      height: 1920,
+      width: 1080,
       defaults: {
         transition: null,
       },
       clips: [
         {
           duration: total_duration,
-          layers: [...lays],
+          layers: [
+            {
+              type: "image-overlay",
+              path: "assets/" + randomFile,
+            },
+            ...lays,
+          ],
         },
       ],
     });
