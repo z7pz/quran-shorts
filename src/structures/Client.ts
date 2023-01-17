@@ -1,114 +1,15 @@
-import { Api } from "./api";
-import { config } from "dotenv";
-import { IListImage } from "./api/verses/interfaces.js";
 import PQueue from "p-queue";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 import Editly, { Layer } from "editly";
-import { get_font } from "../utils";
-import { Logger } from "../utils/logger";
-import { downloadFile } from "../utils/download_stream";
 import { upload } from "youtube-videos-uploader";
-import { executablePath } from "puppeteer";
 import { Video } from "youtube-videos-uploader/dist/types";
-import { surahs } from "../constants/surah";
+import { executablePath } from "puppeteer";
 import fs from "fs/promises";
 
-config();
-const onVideoUploadSuccess = (videoUrl) => {
-  console.log(videoUrl);
-};
-
-interface BuildRes {
-  name: string;
-  description: string;
-  surah: number;
-  offset: number;
-}
-
-class CalculatorManager {
-  api = new Api();
-  constructor(
-    public page: number,
-    public current: number,
-    public verses: IListImage["verses"],
-    public surah: number,
-    public offset: number,
-    public logger: Logger,
-    public skipVerses: number[]
-  ) {}
-  getAudio() {
-    return this.verses.map((verse) => [verse.audio.url, verse.audio.duration]);
-  }
-  async getVerses() {
-    const words = this.verses.map(async (verse, i) => {
-      return await this.api.verses.get.list({
-        offset: this.offset,
-        limit: this.page,
-        surah: this.surah,
-        type: "words",
-      });
-    });
-    const res = await Promise.all(words);
-    return res;
-  }
-  async getWords() {
-    let verses = await this.getVerses();
-    const words = verses[0].verses.map((verse) => {
-      return {
-        id: verse.id,
-        words: verse.words.map((word, i) => {
-          return {
-            i,
-            text: word.text_indopak,
-            code: word.code,
-            p: word.class_name,
-          };
-        }),
-      };
-    });
-    return words;
-  }
-  async download() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-
-    let path_split = __dirname.split("\\");
-    path_split.splice(path_split.length - 1, path_split.length);
-    let paths = [];
-    this.verses = this.verses
-      .filter((v) => !this.skipVerses.includes(v.id))
-      .sort((a, b) => a.id - b.id);
-    let promises = this.verses.map(async (verse, i) => {
-      let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
-      let pathmp3 = path_split.join("\\") + `\\tmp\\audio\\${mp3}`;
-      const verses_words = await this.getWords();
-      const ver = verses_words[i];
-      paths.push({
-        i: ver.id,
-        font: parseInt(ver.words[0].p.replace("p", "")),
-        name: pathmp3,
-        words: ver.words,
-        duration: verse.audio.duration,
-      });
-
-      await downloadFile(`http://verses.quran.com/${verse.audio.url}`, pathmp3);
-    });
-    await Promise.all(promises);
-    return paths.sort((a, b) => a.i - b.i) as {
-      i: number;
-      name: string;
-      duration: number;
-      font: number;
-      words: {
-        i: number;
-        text: string;
-        code: string;
-        p: string;
-      }[];
-    }[];
-  }
-}
+import { Api } from ".";
+import { Logger, get_font } from "../utils";
+import { surahs } from "../constants";
+import { ClientManager } from "./ClientManager";
+import { IVerseImage } from "./api/verses/interfaces";
 
 export class Client {
   api = new Api();
@@ -116,15 +17,29 @@ export class Client {
   constructor(debug: boolean = false) {
     this.logger = new Logger(debug);
   }
-  async calculate({ surah, offset }: { surah: number; offset: number }) {
+
+  async getRandomBackground() {
+    const assets = await fs.readdir("assets");
+    return assets[Math.floor(Math.random() * assets.length)];
+  }
+
+  async run({ surah, offset }: { surah: number; offset: number }) {
     if (surah > 114) {
       throw Error("Last surah is 114, you can't get beyond that.");
     }
-    let current = 0; // video length
+    /**
+     * "current" is length of the video
+     * "page" verse count
+     * verses
+     */
+    let current = 0; //
     let page = 1; // verse number
-    let skipVerses = [];
-    let verses = []; // verses
+    let verses: IVerseImage[] = []; // verses
     while (true) {
+      /**
+       * Get Image list
+       * because Image has duration, and Words doesn't
+       */
       const list = await this.api.verses.get.list({
         recitation: 7,
         offset,
@@ -133,9 +48,7 @@ export class Client {
         type: "image",
         surah: surah,
       });
-      // console.log(list.pagination.total_count, offset + page);
       if (list.pagination.total_count < offset + page) {
-        // console.log("SKIP?");
         break;
       }
       let duration = list.verses[0].audio.duration ?? 0;
@@ -143,8 +56,6 @@ export class Client {
         if (verses.length > 0) {
           break;
         }
-        skipVerses.push(list.verses[0].id);
-        // page++;
         offset = offset + 1;
         continue;
       }
@@ -153,18 +64,16 @@ export class Client {
       current += duration;
     }
     if (verses.length === 0) return false;
-    return new CalculatorManager(
-      page,
-      current,
-      verses,
-      surah,
-      offset,
-      this.logger,
-      skipVerses
-    );
+
+    /**
+     * return client managuer class to process:
+     * - download audio files (mp3)
+     */
+
+    return new ClientManager(page, current, verses, surah, offset, this.logger);
   }
-  async build(offset: number, surah: number, i: number): Promise<BuildRes> {
-    const downloader = await this.calculate({ surah: surah, offset });
+  async build(offset: number, surah: number, i: number): Promise<IBuildRes> {
+    const downloader = await this.run({ surah: surah, offset });
     if (downloader == false) {
       return await this.build(0, surah + 1, i);
     }
@@ -173,14 +82,19 @@ export class Client {
       .map((file) => file.duration)
       .reduce((prev, curr) => prev + curr);
     let start = 0;
+    /**
+     * building the layers for PQueu so we can await them with same concurrency
+     */
     const layers = files
       .sort((a, b) => a.i - b.i)
       .map((file) => {
         return async () => {
+          // create text layer for Quran verses
           const text = {
             originX: "center",
             originY: "center",
             type: "title",
+            // get,  download and install the font
             fontPath: await get_font(file.font),
             text: file.words
               .map((word) => {
@@ -194,6 +108,7 @@ export class Client {
             start,
             stop: start + file.duration,
           } as Layer;
+          // create voice layer of the (mp3) file 
           const voice = {
             type: "detached-audio",
             start,
@@ -205,11 +120,15 @@ export class Client {
         };
       })
       .flatMap((v) => v);
+    /**
+     * await all layers with same concurrency
+     */
     const lays = (await new PQueue({ concurrency: 1 }).addAll(layers)).flatMap(
       (v) => v
     );
-    const assets = await fs.readdir("assets");
-    const randomFile = assets[Math.floor(Math.random() * assets.length)];
+    /**
+     * build video with Edily editor
+     */
     await Editly({
       enableFfmpegLog: false,
       keepSourceAudio: false,
@@ -225,7 +144,7 @@ export class Client {
           layers: [
             {
               type: "image-overlay",
-              path: "assets/" + randomFile,
+              path: "assets/" + (await this.getRandomBackground()),
             },
             ...lays,
           ],
@@ -240,11 +159,15 @@ export class Client {
       offset: downloader.offset + files.length,
     };
   }
-  async upload(video: BuildRes): Promise<{ surah: number; offset: number }> {
+  async upload(video: IBuildRes): Promise<IUploadOptions> {
     const credentials = {
       email: process.env.email,
       pass: process.env.password,
       recoveryemail: process.env.recoveryEmail || undefined,
+    };
+
+    const onVideoUploadSuccess = (videoUrls: string[]) => {
+      console.log(videoUrls);
     };
 
     const video1 = {
@@ -254,7 +177,7 @@ export class Client {
       isNotForKid: true,
       onSuccess: onVideoUploadSuccess,
       skipProcessingWait: true,
-    } as Video;
+    } as unknown as Video;
 
     await upload(credentials, [video1], {
       executablePath: executablePath(),

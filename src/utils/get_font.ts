@@ -10,6 +10,6 @@ export async function get_font(n: number) {
   const cont = await download_font(n, path_split);
   if (cont) return [...path_split, `p${n}.ttf`].join("\\");
   await convert_woff2_tff(n, path_split);
-  await install_font(n, path_split);
+  await install_font(n);
   return [...path_split, `p${n}.ttf`].join("\\");
 }

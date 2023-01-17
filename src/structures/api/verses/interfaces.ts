@@ -1,5 +1,9 @@
 type TVerseKey = `${number}:${number}`;
-interface IWord {
+export type Type = "words" | "image";
+export type TVerses<T extends Type = "words"> = T extends "words"
+  ? IListWord
+  : IListImage;
+export interface IWord {
   id: number;
   position: number;
   text_indopak: string;
@@ -22,7 +26,7 @@ interface IWord {
     url: string | null; // "wbw/001_001_001.mp3", null cuz of the number of Aea
   };
 }
-interface IVerseWord {
+export interface IVerseWord {
   id: number;
   verse_number: number;
   chapter_id: number;
@@ -43,7 +47,7 @@ interface Image {
   width: number;
 }
 
-interface IVerseImage {
+export interface IVerseImage {
   id: number;
   verse_number: number;
   chapter_id: number;

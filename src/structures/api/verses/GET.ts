@@ -1,7 +1,6 @@
 import { Verses } from ".";
-import { IListWord, IListImage } from "./interfaces";
+import { IListWord, IListImage, Type, TVerses } from "./interfaces";
 
-type Type = "words" | "image";
 interface IOptions<T extends Type> {
   recitation: number;
   surah: number;
@@ -9,7 +8,7 @@ interface IOptions<T extends Type> {
   translations: number;
   page: number;
   limit: number;
-  offset: number
+  offset: number;
 }
 
 export class GET {
@@ -20,17 +19,17 @@ export class GET {
     translations: 21,
     page: 1,
     limit: 10,
-    offset: 0
+    offset: 0,
   };
   constructor(public verses: Verses) {}
   async list<T extends Type = "words">(options?: Partial<IOptions<T>>) {
     let clone = this.options;
     Object.assign(clone, options ?? {});
     return (
-      await this.verses.api.axios.get<T extends "words" ? IListWord : IListImage>(
+      await this.verses.api.axios.get<TVerses<T>>(
         `chapters/${clone.surah}/verses?recitation=${clone.recitation}&translations=${clone.translations}&language=en&text_type=${clone.type}&limit=${clone.limit}&offset=${clone.offset}&page=${clone.page}`
       )
     ).data;
   }
-  async 
+  async;
 }

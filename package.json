@@ -5,8 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts",
-    "test": "nodemon --experimental-specifier-resolution=node ./tests/verse_with_num.ts"
+    "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts"
   },
   "keywords": [],
   "author": "",
