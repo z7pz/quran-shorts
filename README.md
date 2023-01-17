@@ -13,7 +13,7 @@ basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 - [X] fix bugs (end of the surah and ...)
 - [ ] add estimated number of videos
 - [ ] start from the last upload
-- [ ] add backgroud as asset
+- [X] add backgroud as asset
 - [ ] generate backgrounds
 
 
