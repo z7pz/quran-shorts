@@ -15,7 +15,7 @@ basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 - [ ] start from the last upload
 - [X] add backgroud as asset
 - [ ] generate backgrounds
-- [ ] loof over recitations 
+- [ ] loop over recitations 
 
 
 # Usage
