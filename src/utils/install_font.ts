@@ -7,7 +7,7 @@ function getUserHome() {
 
 /**
  * install the font into the system
- * 
+ *
  * windows supported
  * linux not supported yet
  */
@@ -15,13 +15,13 @@ function getUserHome() {
 export async function install_font(n: number) {
   switch (process.platform) {
     case "win32": {
-      function promiseFromChildProcess(child) {
+      function promiseFromChildProcess(child: any) {
         return new Promise(function (resolve, reject) {
           child.addListener("error", reject);
           child.addListener("exit", resolve);
         });
       }
-      
+
       const files = await fs.readdir(
         getUserHome() + "\\AppData\\Local\\Microsoft\\Windows\\Fonts"
       );

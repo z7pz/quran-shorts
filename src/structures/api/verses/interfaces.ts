@@ -1,3 +1,5 @@
+type TLanguage = "english" | "arabic";
+type TAuthors = ""; // TODO
 type TVerseKey = `${number}:${number}`;
 export type Type = "words" | "image";
 export type TVerses<T extends Type = "words"> = T extends "words"

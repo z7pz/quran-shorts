@@ -14,7 +14,7 @@ export async function downloadFile(
     }).then((response) => {
       return new Promise((resolve, reject) => {
         response.data.pipe(writer);
-        let error = null;
+        let error: Error | null = null;
         writer.on("error", (err) => {
           error = err;
           writer.close();

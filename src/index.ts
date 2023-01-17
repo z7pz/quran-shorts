@@ -1,5 +1,6 @@
+import { config } from "dotenv";
 import { Client } from "../src/structures/Client";
-
+config();
 const client = new Client();
 (async () => {
   let surah = 2;

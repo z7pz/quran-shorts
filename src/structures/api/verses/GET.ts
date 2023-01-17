@@ -1,5 +1,5 @@
 import { Verses } from ".";
-import { IListWord, IListImage, Type, TVerses } from "./interfaces";
+import { Type, TVerses } from "./interfaces";
 
 interface IOptions<T extends Type> {
   recitation: number;
@@ -31,5 +31,4 @@ export class GET {
       )
     ).data;
   }
-  async;
 }

@@ -1,7 +1,7 @@
 import PQueue from "p-queue";
 import Editly, { Layer } from "editly";
 import { upload } from "youtube-videos-uploader";
-import { Video } from "youtube-videos-uploader/dist/types";
+import { Credentials, Video } from "youtube-videos-uploader/dist/types";
 import { executablePath } from "puppeteer";
 import fs from "fs/promises";
 
@@ -10,6 +10,18 @@ import { Logger, get_font } from "../utils";
 import { surahs } from "../constants";
 import { ClientManager } from "./ClientManager";
 import { IVerseImage } from "./api/verses/interfaces";
+
+interface IBuildRes {
+  name: string;
+  description: string;
+  surah: number;
+  offset: number;
+}
+
+interface IUploadOptions {
+  surah: number;
+  offset: number;
+}
 
 export class Client {
   api = new Api();
@@ -89,7 +101,7 @@ export class Client {
       .sort((a, b) => a.i - b.i)
       .map((file) => {
         return async () => {
-          // create text layer for Quran verses
+          // create text layer for Quran
           const text = {
             originX: "center",
             originY: "center",
@@ -108,7 +120,7 @@ export class Client {
             start,
             stop: start + file.duration,
           } as Layer;
-          // create voice layer of the (mp3) file 
+          // create voice layer of the (mp3) file
           const voice = {
             type: "detached-audio",
             start,
@@ -159,14 +171,15 @@ export class Client {
       offset: downloader.offset + files.length,
     };
   }
+
   async upload(video: IBuildRes): Promise<IUploadOptions> {
     const credentials = {
       email: process.env.email,
       pass: process.env.password,
       recoveryemail: process.env.recoveryEmail || undefined,
-    };
+    } as Credentials;
 
-    const onVideoUploadSuccess = (videoUrls: string[]) => {
+    const onVideoUploadSuccess = (videoUrls: string) => {
       console.log(videoUrls);
     };
 
@@ -177,8 +190,7 @@ export class Client {
       isNotForKid: true,
       onSuccess: onVideoUploadSuccess,
       skipProcessingWait: true,
-    } as unknown as Video;
-
+    } as Video;
     await upload(credentials, [video1], {
       executablePath: executablePath(),
     }).then(console.log);

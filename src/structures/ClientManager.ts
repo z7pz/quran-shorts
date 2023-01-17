@@ -4,6 +4,19 @@ import { downloadFile, Logger } from "../utils";
 import { Api } from "./api";
 import { IListImage } from "./api/verses/interfaces";
 
+interface IPaths {
+  i: number;
+  name: string;
+  duration: number;
+  font: number;
+  words: {
+    i: number;
+    text: string;
+    code: string;
+    p: string;
+  }[];
+}
+
 export class ClientManager {
   api = new Api();
   constructor(
@@ -63,7 +76,8 @@ export class ClientManager {
     path_split.splice(path_split.length - 1, path_split.length);
     let paths: IPaths[] = [];
     let promises = this.verses.map(async (verse, i) => {
-      let mp3 = `${verse.audio.url.split("mp3")[1].replace("/", "")}mp3`;
+      // FIX ME
+      let mp3 = `${verse.audio.url!.split("mp3")[1].replace("/", "")}mp3`;
       let pathmp3 = path_split.join("\\") + `\\tmp\\audio\\${mp3}`;
       const verses_words = await this.getWords();
       const ver = verses_words[i];
@@ -72,7 +86,7 @@ export class ClientManager {
         font: parseInt(ver.words[0].p.replace("p", "")),
         name: pathmp3,
         words: ver.words,
-        duration: verse.audio.duration,
+        duration: verse.audio.duration!,
       });
 
       await downloadFile(`http://verses.quran.com/${verse.audio.url}`, pathmp3);
