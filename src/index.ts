@@ -9,9 +9,9 @@ const client = new Client();
   let i = 0;
   while (create > i) {
     const video = await client.build(offset, surah, i);
-    // const res = await client.upload(video);
-    // surah = res.surah;
-    // offset = res.offset;
+    const res = await client.upload(video);
+    surah = res.surah;
+    offset = res.offset;
     i++;
   }
 })();
