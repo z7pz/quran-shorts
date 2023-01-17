@@ -1,29 +1,32 @@
 {
-  "name": "7snat",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/node": "^18.11.18",
-    "@types/wawoff2": "^1.0.0",
-    "axios": "^1.2.2",
-    "dotenv": "^16.0.3",
-    "editly": "^0.14.2",
-    "fs": "0.0.1-security",
-    "https": "^1.0.0",
-    "node-gyp": "^9.3.1",
-    "p-queue": "^7.3.0",
-    "puppeteer": "^19.5.2",
-    "puppeteer-core": "^19.5.2",
-    "wawoff2": "^2.0.1",
-    "woff2": "^1.0.0",
-    "youtube-videos-uploader": "^2.0.8"
-  }
+    "name": "7snat",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "dev": "nodemon --experimental-specifier-resolution=node ./src/index.ts"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@types/node": "^18.11.18",
+        "@types/wawoff2": "^1.0.0",
+        "axios": "^1.2.2",
+        "dotenv": "^16.0.3",
+        "editly": "^0.14.2",
+        "fs": "0.0.1-security",
+        "https": "^1.0.0",
+        "node-gyp": "^9.3.1",
+        "p-queue": "^7.3.0",
+        "puppeteer": "^19.5.2",
+        "puppeteer-core": "^19.5.2",
+        "wawoff2": "^2.0.1",
+        "woff2": "^1.0.0",
+        "youtube-videos-uploader": "^2.0.8"
+    },
+    "devDependencies": {
+        "prettier": "2.8.3"
+    }
 }

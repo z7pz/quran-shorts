@@ -1,26 +1,30 @@
 # quran-shorts
+
 basically, upload shorts videos of quran into (youtube, instagram, tiktok)
 
 # Features
-- support youtube
-- support (windows) 
-- still beta
+
+-   support youtube
+-   support (windows)
+-   still beta
 
 # TODO
-- [ ] dont download existed files (mp3, fonts)
-- [ ] support linux [#1](/../../issues/1)
-- [ ] delete tmp files
-- [X] fix bugs (end of the surah and ...)
-- [ ] add estimated number of videos
-- [ ] start from the last upload
-- [X] add backgroud as asset
-- [ ] generate backgrounds
-- [ ] loop over recitations 
 
+-   [ ] dont download existed files (mp3, fonts)
+-   [ ] support linux [#1](/../../issues/1)
+-   [ ] delete tmp files
+-   [x] fix bugs (end of the surah and ...)
+-   [ ] add estimated number of videos
+-   [ ] start from the last upload
+-   [x] add backgroud as asset
+-   [ ] generate backgrounds
+-   [ ] loop over recitations
 
 # Usage
-create `.env` file 
+
+create `.env` file
 add missing fields
+
 ```
 email="your email"
 password="your password"
