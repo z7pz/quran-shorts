@@ -2,7 +2,7 @@ import PQueue from "p-queue";
 import Editly, { Layer } from "editly";
 import { upload } from "youtube-videos-uploader";
 import { Credentials, Video } from "youtube-videos-uploader/dist/types";
-import { executablePath } from "puppeteer";
+import { executablePath, Touchscreen } from "puppeteer";
 import fs from "fs/promises";
 
 import { Api } from ".";
@@ -36,6 +36,7 @@ export class Client {
 	}
 
 	async run({ surah, offset }: { surah: number; offset: number }) {
+		console.log(surah, offset);
 		if (surah > 114) {
 			throw Error("Last surah is 114, you can't get beyond that.");
 		}
@@ -103,17 +104,21 @@ export class Client {
 			.map((file) => file.duration)
 			.reduce((prev, curr) => prev + curr);
 		let start = 0;
+		// TODO: add system of addition to be perfect
 		let addition = 0.3;
-		if (total_duration + files.length * addition > 60) {
+		let with_addition = total_duration + files.length * addition;
+		if (with_addition > 60) {
 			dont = true;
 		}
-		let add = +(dont ? 0 : addition);
-
+		let add = dont ? addition : addition;
+		this.logger.debug(
+			dont ? "there is no addition." : "there is addition",
+			`with addition: ${with_addition}`
+		);
 		/**
 		 * building the layers for PQueu so we can await them with same concurrency
 		 */
 		const layers = files
-			.sort((a, b) => a.i - b.i)
 			.map((file) => {
 				return async () => {
 					// create text layer for Quran
@@ -135,17 +140,17 @@ export class Client {
 								return character;
 							})
 							.join(" "),
-						start,
-						stop: start + file.duration + add,
+						start: start,
+						stop: start + file.duration - 0.1,
 					} as Layer;
 					// create voice layer of the (mp3) file
 					const voice = {
 						type: "detached-audio",
-						start,
-						stop: start + file.duration,
+						start: start + add,
+						stop: start + add + file.duration,
 						path: file.name,
 					} as Layer;
-					start += file.duration + add;
+					start += file.duration;
 					return [voice, text] as Layer[];
 				};
 			})
@@ -160,7 +165,7 @@ export class Client {
 		 * build video with Edily editor
 		 */
 		await Editly({
-			enableFfmpegLog: false,
+			fast: this.logger.active,
 			keepSourceAudio: false,
 			outPath: `output.mp4`,
 			height: 1920,
@@ -170,7 +175,7 @@ export class Client {
 			},
 			clips: [
 				{
-					duration: total_duration + add,
+					duration: total_duration + files.length * add,
 					layers: [
 						{
 							type: "image-overlay",
@@ -191,7 +196,7 @@ export class Client {
 		};
 	}
 
-	async upload(video: IBuildRes): Promise<IUploadOptions> {
+	async upload(video: IBuildRes) {
 		const credentials = {
 			email: process.env.email,
 			pass: process.env.password,
@@ -213,9 +218,5 @@ export class Client {
 		await upload(credentials, [video1], {
 			executablePath: executablePath(),
 		}).then(console.log);
-		return {
-			surah: video.surah,
-			offset: video.offset,
-		};
 	}
 }
