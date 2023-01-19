@@ -14,17 +14,18 @@
 		"noImplicitThis": false,
 		"strictNullChecks": false,
 		"esModuleInterop": true,
-		"rootDir": "src",
+		"rootDir": ".",
 		"baseUrl": "src",
-		"outDir": "build",
+		"outDir": "dist",
 		"removeComments": true,
 		"skipLibCheck": true,
 		"declaration": true,
-		"declarationDir": "./build/types"
+		"resolveJsonModule": true,
+		"declarationDir": "./dist/types"
 	},
 	"ts-node": {
 		"esm": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "./config.json"],
 	"exclude": ["node_modules", "*/node_modules/**"]
 }

@@ -26,7 +26,11 @@ interface IUploadOptions {
 export class Client {
 	api = new Api();
 	logger: Logger;
-	constructor(debug: boolean = false) {
+	constructor({
+		debug
+	}: {
+		debug: boolean
+	}) {
 		this.logger = new Logger(debug);
 	}
 

@@ -1,4 +1,4 @@
-import { dirname } from "path";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { downloadFile, Logger } from "../utils";
 import { Api } from "./api";
@@ -79,8 +79,6 @@ export class ClientManager {
 	async download() {
 		const __filename = fileURLToPath(import.meta.url);
 		const __dirname = dirname(__filename);
-		let path_split = __dirname.split("\\");
-		path_split.splice(path_split.length - 1, path_split.length);
 		let paths: IPaths[] = [];
 		this.logger.debug(`downloading ${this.verses.length} mp3 file.`);
 		let promises = this.verses.map((verse, i) => {
@@ -88,7 +86,7 @@ export class ClientManager {
 				let mp3 = `${verse.audio
 					.url!.split("mp3")[1]
 					.replace("/", "")}mp3`;
-				let pathmp3 = path_split.join("\\") + `\\tmp\\audio\\${mp3}`;
+				let pathmp3 = join(__dirname, "..", "tmp", "audio", mp3);
 				const verses_words = await this.getWords();
 				const ver = verses_words[i];
 				paths.push({

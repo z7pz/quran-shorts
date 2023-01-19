@@ -1,3 +1,4 @@
+type TLanguage = "english" | "arabic";
 interface ITranslatedName {
 	name: string;
 	language_name: string; // lang
