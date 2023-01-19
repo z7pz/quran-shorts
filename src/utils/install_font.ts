@@ -1,5 +1,7 @@
 import { execSync } from "child_process";
-import fs from "fs/promises";
+import fs, { copyFile, readdir } from "fs/promises";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 function getUserHome() {
 	return process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"];
@@ -13,6 +15,8 @@ function getUserHome() {
  */
 
 export async function install_font(n: number) {
+	const __filename = fileURLToPath(import.meta.url);
+	const __dirname = dirname(__filename);
 	switch (process.platform) {
 		case "win32": {
 			function promiseFromChildProcess(child: any) {
@@ -44,6 +48,23 @@ export async function install_font(n: number) {
 			);
 
 			return promise;
+		}
+		case "linux": {
+			const fontsDirPath = join(getUserHome(), "/.local/share/fonts");
+			try {
+				await readdir(fontsDirPath);
+			} catch (error) {
+				if (error.code == "ENOENT") {
+					await fs.mkdir(fontsDirPath);
+				} else {
+					throw error;
+				}
+			}
+			await copyFile(
+				join(__dirname, "..", "tmp", "fonts", `p${n}.ttf`),
+				join(fontsDirPath, `p${n}.ttf`)
+			);
+			return;
 		}
 		default: {
 			throw Error("Your OS is not supported. " + process.platform);
