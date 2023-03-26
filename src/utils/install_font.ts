@@ -11,7 +11,7 @@ function getUserHome() {
  * install the font into the system
  *
  * windows supported
- * linux not supported yet
+ * linux supported
  */
 
 export async function install_font(n: number) {
@@ -50,20 +50,7 @@ export async function install_font(n: number) {
 			return promise;
 		}
 		case "linux": {
-			const fontsDirPath = join(getUserHome(), "/.local/share/fonts");
-			try {
-				await readdir(fontsDirPath);
-			} catch (error) {
-				if (error.code == "ENOENT") {
-					await fs.mkdir(fontsDirPath);
-				} else {
-					throw error;
-				}
-			}
-			await copyFile(
-				join(__dirname, "..", "tmp", "fonts", `p${n}.ttf`),
-				join(fontsDirPath, `p${n}.ttf`)
-			);
+			// you dont need to install it on linux.... bruh
 			return;
 		}
 		default: {
