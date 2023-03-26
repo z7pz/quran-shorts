@@ -1,6 +1,7 @@
 {
 	"debug": true,
-	"create": 10,
-	"surah": 10,
-	"verse": 10
+	"create": 1,
+	"surah": 1,
+	"verse": 1,
+	"recitation": 3
 }

@@ -23,11 +23,10 @@ export class GET {
 	};
 	constructor(public verses: Verses) {}
 	async list<T extends Type = "words">(options?: Partial<IOptions<T>>) {
-		let clone = this.options;
-		Object.assign(clone, options ?? {});
+		Object.assign(this.options, options ?? {});
 		return (
 			await this.verses.api.axios.get<TVerses<T>>(
-				`chapters/${clone.surah}/verses?recitation=${clone.recitation}&translations=${clone.translations}&language=en&text_type=${clone.type}&limit=${clone.limit}&offset=${clone.offset}&page=${clone.page}`
+				`chapters/${this.options.surah}/verses?recitation=${this.options.recitation}&translations=${this.options.translations}&language=en&text_type=${this.options.type}&limit=${this.options.limit}&offset=${this.options.offset}&page=${this.options.page}`
 			)
 		).data;
 	}
