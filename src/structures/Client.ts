@@ -26,11 +26,7 @@ interface IUploadOptions {
 export class Client {
 	api = new Api();
 	logger: Logger;
-	constructor({
-		debug
-	}: {
-		debug: boolean
-	}) {
+	constructor({ debug }: { debug: boolean }) {
 		this.logger = new Logger(debug);
 	}
 
@@ -39,7 +35,15 @@ export class Client {
 		return assets[Math.floor(Math.random() * assets.length)];
 	}
 
-	async run({ surah, offset }: { surah: number; offset: number }) {
+	async run({
+		surah,
+		offset,
+		recitation,
+	}: {
+		surah: number;
+		offset: number;
+		recitation: number;
+	}) {
 		console.log(surah, offset);
 		if (surah > 114) {
 			throw Error("Last surah is 114, you can't get beyond that.");
@@ -58,7 +62,7 @@ export class Client {
 			 * because Image has duration, and Words doesn't
 			 */
 			const list = await this.api.verses.get.list({
-				recitation: 7,
+				recitation: recitation,
 				offset,
 				limit: 1,
 				page: page,
@@ -96,10 +100,15 @@ export class Client {
 			this.logger
 		);
 	}
-	async build(offset: number, surah: number, i: number): Promise<IBuildRes> {
-		const downloader = await this.run({ surah: surah, offset });
+	async build(
+		offset: number,
+		surah: number,
+		i: number,
+		recitation: number
+	): Promise<IBuildRes> {
+		const downloader = await this.run({ surah: surah, offset, recitation });
 		if (downloader == false) {
-			return await this.build(0, surah + 1, i);
+			return await this.build(0, surah + 1, i, recitation);
 		}
 		let dont = false;
 
@@ -169,6 +178,7 @@ export class Client {
 		 * build video with Edily editor
 		 */
 		await Editly({
+			verbose: false,
 			fast: this.logger.active,
 			keepSourceAudio: false,
 			outPath: `output.mp4`,
