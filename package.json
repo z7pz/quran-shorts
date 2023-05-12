@@ -19,7 +19,7 @@
 		"node-gyp": "^9.3.1",
 		"p-queue": "^7.3.0",
 		"puppeteer": "^19.5.2",
-		"puppeteer-core": "^19.5.2",
+		"puppeteer-core": "^20.2.0",
 		"wawoff2": "^2.0.1",
 		"woff2": "^1.0.0",
 		"youtube-videos-uploader": "^2.0.8",
